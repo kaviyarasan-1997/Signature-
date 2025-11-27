@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Dyfi Digital Signature </title>
-<!-- Load Signature Pad and jsPDF libraries -->
+<title>Digital Signature and Name Sender (Simplified)</title>
+<!-- Load Signature Pad and jsPDF libraries (Kept for visual consistency and other buttons) -->
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-    /* Basic Styling for Mobile-First Design */
+    /* Basic Styling for Mobile-First Design (Tailwind classes are not used, retaining original style structure) */
     body { 
         font-family: 'Inter', Arial, sans-serif; 
         background: #f4f7f9; 
@@ -82,7 +82,7 @@
     #clear { background: #d32f2f; } /* Red for Clear */
     #pdfMenuBtn { background: #1a73e8; } /* Blue for Menu */
 
-    /* Popup for PDF options */
+    /* Popup for PDF options (still useful for preview/download if needed) */
     #pdfMenu { 
         display: none; 
         margin: 10px auto; 
@@ -141,8 +141,8 @@
 </head>
 <body>
 
-<h1>DYFI நடத்தும் E-Signature</h1>
-<p>Sign the box below and email the sealed PDF document.</p>
+<h1>Secure E-Signature</h1>
+<p>Sign the box below. Only your name and email will be submitted.</p>
 
 <input id="name" placeholder="Enter Your Name">
 <input id="email" type="email" placeholder="Recipient Email Address">
@@ -161,7 +161,7 @@
     <button id="downloadBtn">Download PDF</button>
 </div>
 
-<button id="save">Send Signed PDF via Email</button>
+<button id="save">Submit Name and Email</button>
 
 <!-- Custom Message Box for Mobile Friendly Alerts -->
 <div id="messageBox" class="message-box">
@@ -178,15 +178,13 @@
         document.getElementById('messageBox').classList.add('active');
     }
 
-    // 1. Initialize Canvas & SignaturePad
+    // 1. Initialize Canvas & SignaturePad (kept for visualization/clear)
     const canvas = document.getElementById("canvas");
     const box = document.getElementById("box");
     let signaturePad;
 
-    // Function to handle canvas resizing and maintain signature aspect ratio
     function resizeCanvas() {
         const data = signaturePad ? signaturePad.toData() : null;
-        
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = box.clientWidth * ratio;
         canvas.height = box.clientHeight * ratio;
@@ -196,20 +194,18 @@
             signaturePad = new SignaturePad(canvas, { backgroundColor: "transparent", penColor: "blue" });
         } else {
             signaturePad.clear();
-            // Restore data after resize
             if (data && data.length > 0) {
                 signaturePad.fromData(data);
             }
         }
     }
     
-    // Initialize and listen for resize events
     window.addEventListener("resize", resizeCanvas);
-    resizeCanvas(); // Initial call to set size
+    resizeCanvas(); 
 
     document.getElementById("clear").onclick = () => signaturePad.clear();
 
-    // 2. Core PDF Generation Function
+    // 2. PDF Generation Function (Kept for Preview/Download buttons)
     async function createPDF() {
         try {
             const { jsPDF } = window.jspdf;
@@ -219,34 +215,25 @@
 
             const name = document.getElementById("name").value.trim() || "Unsigned User";
             
-            // --- PDF CONTENT ---
-            
-            // 1. Add Title/Context
+            // PDF Content
             pdf.setFontSize(22);
-            pdf.text("Digital Signature Verification Document", 40, 40);
-            
-            // 2. Add Signing Info
+            pdf.text("Digital Signature Preview Document", 40, 40);
             pdf.setFontSize(14);
-            pdf.text(`Document signed by: ${name}`, 40, 65);
-            pdf.text(`Date: ${new Date().toLocaleString()}`, 40, 85);
+            pdf.text(`Document prepared for: ${name}`, 40, 65);
             
-            // 3. Add Rectangle Border for Signature Area
-            // Drawing a box for a clean, contained signature area
             const signAreaY = 100;
             const signAreaHeight = 400;
             pdf.setLineWidth(2);
-            pdf.setDrawColor(50, 50, 50); // Dark Gray border
+            pdf.setDrawColor(50, 50, 50); 
             pdf.rect(40, signAreaY, pdfWidth - 80, signAreaHeight); 
 
-            // 4. Add Signature (if present)
             if (!signaturePad.isEmpty()) {
                 const imgData = signaturePad.toDataURL("image/png");
-                // Fit signature image inside the rectangle
                 pdf.addImage(imgData, "PNG", 40, signAreaY, pdfWidth - 80, signAreaHeight);
             } else {
                 pdf.setFontSize(18);
                 pdf.setTextColor(150);
-                pdf.text("NO SIGNATURE PROVIDED", pdfWidth / 2, pdfHeight / 2, { align: 'center' });
+                pdf.text("NO SIGNATURE CAPTURED", pdfWidth / 2, pdfHeight / 2, { align: 'center' });
                 pdf.setTextColor(0);
             }
 
@@ -254,7 +241,7 @@
 
         } catch (error) {
             console.error("PDF Generation Error:", error);
-            showMessage("Error generating PDF: " + error.message);
+            showMessage("PDF Generation failed. Check console for details.");
             return null;
         }
     }
@@ -262,7 +249,6 @@
     // 3. Toggle PDF Menu
     document.getElementById("pdfMenuBtn").onclick = () => {
         const menu = document.getElementById("pdfMenu");
-        // Simple toggle logic
         if (menu.style.display === "block") {
             menu.style.display = "none";
         } else {
@@ -286,68 +272,40 @@
             const url = URL.createObjectURL(pdfBlob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `Signed_Document_${new Date().toISOString().slice(0, 10)}.pdf`;
+            a.download = `Signed_Preview_${new Date().toISOString().slice(0, 10)}.pdf`;
             a.click();
         }
     };
 
-    // 6. Web3Forms Email Function (The Fix)
+    // 6. Simplified Web3Forms Submission (Your requested logic)
     document.getElementById("save").onclick = async () => {
         const name = document.getElementById("name").value.trim();
         const email = document.getElementById("email").value.trim();
         const btn = document.getElementById("save");
 
-        if (!name) return showMessage("Please enter your Name.");
-        if (!email) return showMessage("Please enter the Recipient Email.");
-        if (signaturePad.isEmpty()) return showMessage("Please sign the document before sending.");
+        if(!name) return showMessage("Please enter your Name.");
+        if(!email) return showMessage("Please enter the Recipient Email.");
 
-        // UI Feedback during process
-        btn.innerText = "Processing...";
+        // UI Feedback
+        btn.innerText = "Sending...";
         btn.disabled = true;
 
-        const pdfBlob = await createPDF();
-        
-        if (!pdfBlob) {
-            btn.innerText = "Send Signed PDF via Email";
-            btn.disabled = false;
-            return;
-        }
-
-        btn.innerText = "Sending Email...";
-
-        // --- CORE FIX: Prepare Form Data for Reliable Attachment ---
-        const filename = "signed_document.pdf";
         const formData = new FormData();
-        
-        // 1. Access Key (Required)
-        formData.append("access_key", "6e1efc51-93b3-4ffc-8d33-a446ca6eacd8"); 
-        
-        // 2. Explicitly list the file name for Web3Forms to attach to the notification email
-        formData.append("_attachments", filename); 
-        
-        // 3. Subject and User Fields
-        formData.append("subject", `New Signed Document from ${name}`); 
+        formData.append("access_key", "6e1efc51-93b3-4ffc-8d33-a446ca6eacd8");
         formData.append("name", name);
-        formData.append("email", email); 
-        formData.append("message", `A new digital signature document is attached. Recipient specified: ${email}`);
-
-        // 4. The File itself: The key MUST match the name in '_attachments'
-        formData.append(filename, pdfBlob, filename); 
+        formData.append("email", email);
+        formData.append("subject", "New Signature Submitted (Name Only)");
+        formData.append("message", `A new user signed. Name: ${name}, Email: ${email}. The signature image/PDF was not sent.`);
+        formData.append("redirect", "https://web3forms.com/success");
 
         try {
-            const response = await fetch("https://api.web3forms.com/submit", {
-                method: "POST",
-                body: formData
-            });
-
+            const response = await fetch("https://api.web3forms.com/submit", { method:"POST", body: formData });
             const result = await response.json();
-            
-            if (result.success) {
-                showMessage(`Success! The PDF was sent and a confirmation email was sent to your registered Web3Forms address.`);
-                signaturePad.clear();
-                document.getElementById("pdfMenu").style.display = "none";
+
+            if(result.success) {
+                showMessage(`Name sent via email successfully! A confirmation was sent to your Web3Forms registered email.`);
             } else {
-                showMessage(`Error sending email: ${result.message}`);
+                showMessage("Mail failed: " + result.message);
                 console.error("Web3Forms API Error:", result);
             }
         } catch (error) {
@@ -355,7 +313,7 @@
             console.error("Fetch Error:", error);
         } finally {
             // Reset UI
-            btn.innerText = "Send Signed PDF via Email";
+            btn.innerText = "Submit Name and Email";
             btn.disabled = false;
         }
     };
