@@ -2,166 +2,64 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>DYFI-Digital Signature</title>
-<!-- Load Signature Pad and jsPDF libraries -->
+<title>DYFI — E-Signature </title>
+<link rel="shortcut icon" href="images/preview.jpg" type="image/svg+xml">
+<meta property="og:title" content="DYFI Tnpsc Digital Signature Moment">
+<meta property="og:description" content=" Dyfi - Tnpsc Digital Signature - DYFI Tamil Nadu">
+<meta property="og:image" content="https://tndyfi.github.io/Signature/images/previews.png">
+<meta property="og:url" content="https://tndyfi.github.io/Signature/">
+<meta property="og:type" content="website">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://tndyfi.github.io/Signature/images/previews.png">
+
+<script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-storage-compat.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.js"></script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-    /* Basic Styling for Mobile-First Design */
-    body { 
-        font-family: 'Inter', Arial, sans-serif; 
-        background: #f4f7f9; 
-        text-align: center; 
-        padding: 15px; 
-        color: #333;
-    }
-    
-    /* Input Fields & Select */
-    input, select {
-        width: 90%; 
-        max-width: 400px; 
-        padding: 14px; 
-        margin: 10px 0; 
-        border: 1px solid #ccc; 
-        border-radius: 8px; 
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-        transition: border-color 0.3s;
-        /* Ensure select has the same height as inputs */
-        -webkit-appearance: none; 
-        -moz-appearance: none; 
-        appearance: none; 
-        background-color: white; 
-        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000%22%20d%3D%22M287%2069.9L146.2%20210.6%205.4%2069.9z%22%2F%3E%3C%2Fsvg%3E'); /* Custom dropdown arrow */
-        background-repeat: no-repeat;
-        background-position: right 10px top 50%;
-        background-size: 10px auto;
-    }
-    input:focus, select:focus {
-        border-color: #1a73e8;
-        outline: none;
-    }
-    select:invalid {
-        color: #999; /* Placeholder color for unselected option */
-    }
+/* (Your existing CSS here - no changes needed) */
+body{font-family:Inter,Arial,sans-serif;background:#f4f7f9;color:#111;margin:0;padding:18px;text-align:center}
+.container{max-width:900px;margin:0 auto}
+h2{margin:6px 0}
+input,select{width:90%;max-width:420px;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+#box{width:95%;max-width:800px;height:50vh;border-radius:12px;border:2px solid #333;background:#fff;margin:12px auto;position:relative;overflow:hidden}
+canvas{width:100%;height:100%;display:block}
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+button{padding:12px 18px;border-radius:8px;border:0;color:#fff;background:#1a73e8;cursor:pointer;font-weight:600}
+button.danger{background:#d32f2f}
+button.green{background:#0a8f08}
+.counterRow{display:flex;gap:12px;justify-content:center;margin-top:10px}
+.counter{background:#fff;padding:8px 12px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+.message-box{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);visibility:hidden;opacity:0;transition:opacity .2s}
+.message-box.active{visibility:visible;opacity:1}
+.message-content{background:#fff;padding:20px;border-radius:10px;max-width:320px;text-align:center}
+.small{font-size:13px;color:#666}
 
-    /* Signature Box Container */
-    #box { 
-        width: 95%; 
-        max-width: 800px; 
-        height: 50vh; 
-        border: 2px solid #333; 
-        background: white; 
-        position: relative; 
-        margin: 15px auto;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        overflow: hidden;
-    }
-    
-    /* Canvas element fills the box */
-    canvas { 
-        width: 100%; 
-        height: 100%; 
-        display: block; 
-    }
-    
-    /* Buttons Styling */
-    button { 
-        padding: 12px 24px; 
-        margin: 8px; 
-        color: white; 
-        border: none; 
-        border-radius: 8px; 
-        cursor: pointer; 
-        font-size: 16px;
-        font-weight: 600;
-        transition: background-color 0.3s, transform 0.1s;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    button:hover:not(:disabled) {
-        transform: translateY(-1px);
-        opacity: 0.9;
-    }
-    button:disabled { 
-        background: #999; 
-        cursor: not-allowed; 
-        box-shadow: none;
-    }
-    
-    /* Specific Button Colors */
-    #save { background: #0a8f08; } /* Green for Send */
-    #clear { background: #d32f2f; } /* Red for Clear */
-    #pdfMenuBtn { background: #1a73e8; } /* Blue for Menu */
-
-    /* Popup for PDF options (keeping for consistency, though download/preview still works) */
-    #pdfMenu { 
-        display: none; 
-        margin: 10px auto; 
-        width: 90%;
-        max-width: 280px;
-        background: #fff; 
-        padding: 15px; 
-        border-radius: 12px; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
-        border: 1px solid #eee;
-    }
-    #pdfMenu button { 
-        width: 100%; 
-        margin: 5px 0; 
-        background: #444; 
-    }
-
-    /* Message Box for alerts (instead of native alerts) */
-    .message-box {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        visibility: hidden;
-        opacity: 0;
-        transition: visibility 0s, opacity 0.3s;
-    }
-    .message-box.active {
-        visibility: visible;
-        opacity: 1;
-    }
-    .message-content {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        max-width: 300px;
-        text-align: center;
-        transform: scale(0.9);
-        transition: transform 0.3s;
-    }
-    .message-box.active .message-content {
-        transform: scale(1);
-    }
-    .message-content button {
-        background: #1a73e8;
-        margin-top: 15px;
-    }
+/* small responsive tweaks */
+@media (max-width:600px){
+  input,select{width:94%}
+  .controls{flex-direction:column;align-items:center}
+}
 </style>
 </head>
 <body>
+<div class="container">
+  <h2>DYFI நடத்தும் 1-லட்சம் TNPSC பணியிடங்களை நிரப்பக் கோரி கையெழுத்து இயக்கம் E-Signature </h2>
+  <p class="small" id="tamil_petition_text"> தலை நிமிருமா 
+தமிழக இளைஞர்களின் வாழ்வு.? 
+சட்டமன்ற தேர்தலுக்கு முன் TNPSC தேர்வு மூலம் 1 இலட்சம் காலி பணியிடங்களை நிரப்பிடக்கோரி டிசம்பர் 1 தமிழ்நாடு முழுவதும் வேலை கேட்டு 
+ஒரு நாள் காத்திருப்பு இயக்கம்! </p>
 
-<h3>DYFI நடத்தும் 1-லட்சம் TNPSC பணியிடங்களை நிரப்பக் கோரி கையெழுத்து இயக்கம் E-Signature </h3>
-<p>Sign the box below and submit your details.</p>
+  <input id="name" placeholder="Enter Your Name" />
+  <input id="number" placeholder="Enter Phone Number" type="tel" />
 
-<!-- Input Fields -->
-<input id="name" placeholder="Enter Your Name">
-<input id="number" type="number" placeholder="Enter Your Phone Number">
-
-<!-- Native Place Select Dropdown -->
-<select id="district" required>
+  <select id="district" required>
     <option value="" disabled selected>Choose Your District</option>
     <option value="Ariyalur">அரியலூர் - Ariyalur</option>
     <option value="Chengalpattu">செங்கல்பட்டு - Chengalpattu</option>
@@ -203,214 +101,348 @@
     <option value="Virudhunagar">விருதுநகர் - Virudhunagar</option>
 </select>
 
+  <div id="box"><canvas id="canvas"></canvas></div>
 
-<div id="box">
-    <canvas id="canvas"></canvas>
-</div>
-
-<div class="flex-row">
-    <button id="clear">Clear Signature</button>
-    <!-- Kept PDF menu but changed the text on the main send button -->
-    <button id="pdfMenuBtn">View/Download PDF</button> 
-</div>
-
-<div id="pdfMenu">
-    <button id="previewBtn">Preview PDF</button>
-    <button id="downloadBtn">Download PDF</button>
-</div>
-
-<button id="save">Submit Details </button>
-
-<!-- Custom Message Box for Mobile Friendly Alerts -->
-<div id="messageBox" class="message-box">
-    <div class="message-content">
-        <p id="messageText"></p>
-        <button onclick="document.getElementById('messageBox').classList.remove('active')">OK</button>
+  <div class="controls">
+    <button id="clearBtn" class="danger">Clear Signature</button>
+    <div style="position:relative;display:inline-block">
+      <button id="pdfMenuBtn">Preview / Download PDF ▾</button>
+      <div id="pdfMenu" style="display:none;position:absolute;left:0;top:44px;background:#fff;padding:8px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12)">
+        <button id="previewBtn" style="width:200px;margin:6px;background:#444;color:#fff">Preview PDF</button><br/>
+        <button id="downloadBtn" style="width:200px;margin:6px;background:#555;color:#fff">Download PDF</button>
+      </div>
     </div>
+    <button id="submitBtn" class="green">Submit Details</button>
+  </div>
+
+  <div class="counterRow" style="margin-top:16px">
+    <div class="counter">Signatures: <strong id="sigCount">—</strong></div>
+    <div class="counter">Emails sent: <strong id="mailCount">—</strong></div>
+  </div>
+
+  <div class="small" style="margin-top:12px">DYFI - தமிழ்நாடு மாநிலக்குழு</div>
 </div>
+
+<div id="msg" class="message-box"><div class="message-content"><p id="msgText"></p><button id="msgOk">OK</button></div></div>
 
 <script>
-    // --- Utility Function: Custom Alert/Message Box ---
-    function showMessage(text) {
-        document.getElementById('messageText').innerHTML = text; // Use innerHTML for bold text
-        document.getElementById('messageBox').classList.add('active');
-    }
+/* ----------------------------- Firebase config ----------------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBLyf_dz6xPC9wdthZSVtpatkc8JgFhE4Q",
+  authDomain: "chatbox-chats.firebaseapp.com",
+  databaseURL: "https://chatbox-chats-default-rtdb.firebaseio.com",
+  projectId: "chatbox-chats",
+  storageBucket: "chatbox-chats.appspot.com",
+  messagingSenderId: "10200860576",
+  appId: "1:10200860576:android:262315d86f6d1732ddc6c5"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const storage = firebase.storage();
 
-    // 1. Initialize Canvas & SignaturePad
-    const canvas = document.getElementById("canvas");
-    const box = document.getElementById("box");
-    let signaturePad;
+/* ----------------------------- UI refs ----------------------------- */
+const canvas = document.getElementById('canvas');
+const box = document.getElementById('box');
+const clearBtn = document.getElementById('clearBtn');
+const pdfMenuBtn = document.getElementById('pdfMenuBtn');
+const pdfMenu = document.getElementById('pdfMenu');
+const previewBtn = document.getElementById('previewBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const submitBtn = document.getElementById('submitBtn');
+const sigCountEl = document.getElementById('sigCount');
+const mailCountEl = document.getElementById('mailCount');
+const msg = document.getElementById('msg');
+const msgText = document.getElementById('msgText');
+const msgOk = document.getElementById('msgOk');
 
-    // Function to handle canvas resizing and maintain signature aspect ratio
-    function resizeCanvas() {
-        const data = signaturePad ? signaturePad.toData() : null;
-        
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = box.clientWidth * ratio;
-        canvas.height = box.clientHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        
-        if (!signaturePad) {
-            // Initialize SignaturePad
-            signaturePad = new SignaturePad(canvas, { backgroundColor: "transparent", penColor: "blue" });
-        } else {
-            signaturePad.clear();
-            // Restore data after resize
-            if (data && data.length > 0) {
-                signaturePad.fromData(data);
-            }
-        }
+function showMessage(text){
+  msgText.innerHTML = text;
+  msg.classList.add('active');
+  msg.style.visibility = 'visible';
+  msg.style.opacity = '1';
+}
+msgOk.onclick = ()=> { msg.classList.remove('active'); msg.style.visibility='hidden'; msg.style.opacity='0'; };
+
+/* ----------------------------- Canvas + SignaturePad ----------------------------- */
+let signaturePad;
+function setupCanvas(){
+  const ratio = Math.max(window.devicePixelRatio || 1, 1);
+  canvas.width = box.clientWidth * ratio;
+  canvas.height = box.clientHeight * ratio;
+  canvas.getContext('2d').scale(ratio, ratio);
+  if(!signaturePad) signaturePad = new SignaturePad(canvas, { backgroundColor:'transparent', penColor:'blue', minWidth:1.2, maxWidth:3 });
+}
+window.addEventListener('resize', ()=> { setupCanvas(); });
+setupCanvas();
+
+clearBtn.onclick = ()=> signaturePad.clear();
+
+/* ----------------------------- helper: load image as dataURL ----------------------------- */
+async function loadImageDataURL(url){
+  const resp = await fetch(url);
+  const blob = await resp.blob();
+  return await new Promise((res, rej)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> res(reader.result);
+    reader.onerror = rej;
+    reader.readAsDataURL(blob);
+  });
+}
+
+/* ----------------------------- PDF creation (returns blob) ----------------------------- */
+async function createPDFBlob(){
+  const { jsPDF } = window.jspdf;
+  // Change orientation back to portrait since the letterhead seems portrait-focused
+  const pdf = new jsPDF('portrait','pt','a4'); 
+  const pdfW = pdf.internal.pageSize.getWidth();
+  const pdfH = pdf.internal.pageSize.getHeight();
+
+  const name = (document.getElementById('name').value||'').trim() || 'Unsigned User';
+  const selectedDistrict = document.getElementById('district');
+  const districtNameEnglish = selectedDistrict.value || 'Not selected';
+  // Get the display text which includes Tamil and English names for the PDF
+  const districtNameDisplay = selectedDistrict.options[selectedDistrict.selectedIndex].text.trim() || districtNameEnglish;
+  const number = (document.getElementById('number').value||'');
+
+  // --- START FONT SETUP FOR TAMIL ---
+  // Font name must match the one used in the pdf.addFont() call in your NotoSansTamil.js file.
+  const TAMIL_FONT = 'NotoSansTamil'; 
+  
+  // Check if the custom Tamil font has been loaded/added successfully
+  const isTamilFontLoaded = pdf.getFontList()[TAMIL_FONT] !== undefined;
+
+  // Header Tamil Text
+  const headerTamilText = 'அட்சரவு: DYFI — TNPSC கையெழுத்து இயக்கம்';
+  
+  // Main Tamil Content (from the <p> tag, removing line breaks and whitespace)
+  const contentTamil = `தமிழ்நாடு மாநிலம் முழுவதும் TNPSC தேர்வின் மூலம் 1 இலட்சம் காலி பணியிடங்களை நிரப்புவதற்காக DYFI திட்டமிட்ட கையெழுத்து இயக்கத்தை முன்னெடுக்கிறது. இச்செயலின் மூலம் அரசு மற்றும் பதவியாளர் பதவிகளில் நியாயமான பொது நேர்மையை வலியுறுத்துகின்றோம். மனுவல்/தகவல் பெறுபவர்களுக்கு இந்தத் தளத்தின் மூலம் ஆதரவு வழங்கப்படும். இப்பணியில் பங்கேற்கும் அனைவரும் தங்கள் பெயர், மாவட்டம் மற்றும் தொலைபேசி எண்ணை பதிவு செய்வதன் மூலம் நமதுகூட்டத் தொகுப்பை வலுப்படுத்துவர். உங்கள் ஒவ்வொரு கையெழுத்தும் வேலைவாய்ப்புகளுக்கான உரிமையை பட்டியலிட உதவும்.`;
+  
+  // Fallback content if the main Tamil text from the HTML is not properly structured/parsed
+  const fallbackTamilContent = document.getElementById('tamil_petition_text') ? 
+    document.getElementById('tamil_petition_text').innerText.replace(/\s{2,}/g, ' ').trim() : 
+    contentTamil;
+
+  // Use the full petition text for better formatting in PDF
+  const fullPetitionText = `தலை நிமிருமா தமிழக இளைஞர்களின் வாழ்வு.? சட்டமன்ற தேர்தலுக்கு முன் TNPSC தேர்வு மூலம் 1 இலட்சம் காலி பணியிடங்களை நிரப்பிடக்கோரி டிசம்பர் 1 தமிழ்நாடு முழுவதும் வேலை கேட்டு ஒரு நாள் காத்திருப்பு இயக்கம்!\n\n${fallbackTamilContent}`;
+  // --- END FONT SETUP FOR TAMIL ---
+
+  // Load background/logo image (full-page faint watermark + header logo)
+  const bgUrl = 'https://tndyfi.github.io/Signature/images/previews.png';
+  let bgDataUrl = null;
+  try{ bgDataUrl = await loadImageDataURL(bgUrl); } catch(e) { console.warn('Background load failed', e); }
+
+  // If background loaded, add it first as low-contrast watermark
+  if(bgDataUrl){
+    pdf.addImage(bgDataUrl, 'PNG', 0, 0, pdfW, pdfH);
+    pdf.setFillColor(255,255,255);
+    pdf.setAlpha ? pdf.setAlpha(0.85) : null; 
+    try{ pdf.rect(0,0,pdfW,pdfH,'F'); }catch(e){}
+    if(pdf.setAlpha) pdf.setAlpha(1);
+  }
+
+  // Header: logo at left and title
+  if(bgDataUrl){
+    const logoW = 70;
+    const logoH = 70;
+    pdf.addImage(bgDataUrl, 'PNG', 40, 30, logoW, logoH);
+  }
+
+  // English Header
+  pdf.setFont('helvetica');
+  pdf.setFontSize(18);
+  pdf.setTextColor(10,10,10);
+  pdf.text('Democratic Youth Federation of India — Tamil Nadu', 120, 52);
+  
+  // Tamil Header - Use custom font if available
+  pdf.setFontSize(12);
+  if(isTamilFontLoaded) {
+    pdf.setFont(TAMIL_FONT, 'normal');
+    pdf.text(headerTamilText, 120, 70);
+  } else {
+    // Fallback: use a default font (will render boxes if Tamil isn't supported)
+    pdf.setFont('helvetica', 'normal'); 
+    pdf.text(headerTamilText, 120, 70);
+  }
+  
+  // Draw a thin divider
+  pdf.setDrawColor(200);
+  pdf.setLineWidth(0.6);
+  pdf.line(40, 105, pdfW-40, 105);
+
+  // Title - Tamil
+  pdf.setFontSize(14);
+  if(isTamilFontLoaded) {
+      pdf.setFont(TAMIL_FONT, 'bold');
+      pdf.text('TNPSC — 1 லட்சம் காலி பணியிடங்கள்: கையெழுத்து இயக்கம்', 40, 130);
+  } else {
+      pdf.setFont('times','bold'); // Fallback
+      pdf.text('TNPSC — 1 லட்சம் காலி பணியிடங்கள்: கையெழுத்து இயக்கம்', 40, 130);
+  }
+
+  // Content (DYFI message) — Tamil
+  pdf.setFontSize(11);
+  if(isTamilFontLoaded) {
+      pdf.setFont(TAMIL_FONT, 'normal');
+  } else {
+      pdf.setFont('times','normal'); // Fallback
+  }
+  
+  // Split text for formatting
+  const split = pdf.splitTextToSize(fullPetitionText, pdfW - 80);
+  let cursorY = 155;
+  pdf.text(split, 40, cursorY);
+  cursorY += split.length * 14 + 10;
+  
+  // Switch to Helvetica for English/Numbers
+  pdf.setFont('helvetica', 'normal');
+
+  // Add user details block
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica','bold');
+  pdf.text(`Name: ${name}`, 40, cursorY);
+  pdf.setFont('helvetica','normal');
+  pdf.text(`Phone: ${number}`, 40, cursorY + 18);
+  
+  // Use Tamil font for the District name if loaded
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`District: `, 40, cursorY + 36);
+  if(isTamilFontLoaded) {
+    pdf.setFont(TAMIL_FONT, 'normal');
+    pdf.text(districtNameDisplay, 85, cursorY + 36); 
+    pdf.setFont('helvetica', 'normal');
+  } else {
+    pdf.text(districtNameDisplay, 85, cursorY + 36); 
+  }
+  
+  pdf.text(`Date: ${new Date().toLocaleString()}`, 40, cursorY + 54);
+
+  // If signature exists on canvas, add it to PDF at bottom-right
+  if(!signaturePad.isEmpty()){
+    const dataUrl = signaturePad.toDataURL('image/png');
+    const img = new Image();
+    img.src = dataUrl;
+    await new Promise(r => img.onload = r);
+
+    // place signature at bottom-right within page margins
+    const sigW = 200;
+    const sigH = (img.height / img.width) * sigW;
+    const sigX = pdfW - sigW - 60;
+    const sigY = pdfH - sigH - 110;
+    pdf.addImage(dataUrl, 'PNG', sigX, sigY, sigW, sigH);
+
+    // Printed name & district under signature
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica','normal');
+    pdf.text(`${name}`, sigX + 10, sigY + sigH + 18);
+    
+    // Use Tamil font for district display if loaded
+    if(isTamilFontLoaded) {
+      pdf.setFont(TAMIL_FONT, 'normal');
+      pdf.text(`${districtNameDisplay}`, sigX + 10, sigY + sigH + 36);
+      pdf.setFont('helvetica', 'normal');
+    } else {
+      pdf.text(`${districtNameDisplay}`, sigX + 10, sigY + sigH + 36);
     }
     
-    // Initialize and listen for resize events
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas(); // Initial call to set size
+    pdf.text(`Signed on ${new Date().toLocaleDateString()}`, sigX + 10, sigY + sigH + 54);
+  } else {
+    pdf.setFontSize(12);
+    pdf.setFont('times','italic');
+    pdf.text('No signature provided', pdfW - 220, pdfH - 120);
+  }
 
-    document.getElementById("clear").onclick = () => signaturePad.clear();
+  // Footer
+  pdf.setFontSize(9);
+  pdf.setTextColor(100);
+  pdf.setFont('helvetica', 'normal'); 
+  pdf.text('DYFI Tamil Nadu — United for youth employment and justice', 40, pdfH - 40);
 
-    // 2. Core PDF Generation Function (KEPT for Preview/Download buttons)
-    async function createPDF() {
-        try {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF("landscape", "pt", "a4"); 
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
+  return pdf.output('blob');
+}
 
-            const name = document.getElementById("name").value.trim() || "Unsigned User";
-            const district = document.getElementById("district").value || "Not Selected"; 
-            
-            // --- PDF CONTENT ---
-            
-            pdf.setFontSize(22);
-            pdf.text(" el¤J« 1-y£r« gâæl§fis ãu¥g¡ nfhç ifbaG¤J Ïa¡f«", 40, 40);
-            
-            pdf.setFontSize(14);
-            pdf.text(`Document signed by: ${name}`, 40, 65);
-            pdf.text(`District: ${district}`, 40, 85); 
-            pdf.text(`Date: ${new Date().toLocaleString()}`, 40, 105); 
-            
-            // Add Rectangle Border for Signature Area
-            const signAreaY = 120; 
-            const signAreaHeight = 380; 
-            pdf.setLineWidth(2);
-            pdf.setDrawColor(50, 50, 50); 
-            pdf.rect(40, signAreaY, pdfWidth - 80, signAreaHeight); 
+/* ----------------------------- PDF Menu UI ----------------------------- */
+pdfMenuBtn.onclick = ()=> { pdfMenu.style.display = pdfMenu.style.display === 'block' ? 'none' : 'block'; };
+previewBtn.onclick = async ()=>{
+  showMessage('Generating preview...');
+  try{
+    const blob = await createPDFBlob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }catch(e){
+    console.error(e);
+    showMessage('Preview failed: '+(e.message||e));
+  }finally{ msg.classList.remove('active'); msg.style.visibility='hidden'; msg.style.opacity='0'; pdfMenu.style.display='none'; }
+};
+downloadBtn.onclick = async ()=>{
+  try{
+    const blob = await createPDFBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DYFI_Letterhead_${new Date().toISOString().slice(0,10)}.pdf`;
+    a.click();
+  }catch(e){
+    console.error(e);
+    showMessage('Download failed: '+(e.message||e));
+  }finally{ pdfMenu.style.display='none'; }
+};
 
-            // Add Signature (if present)
-            if (!signaturePad.isEmpty()) {
-                const imgData = signaturePad.toDataURL("image/png");
-                pdf.addImage(imgData, "PNG", 40, signAreaY, pdfWidth - 80, signAreaHeight);
-            } else {
-                pdf.setFontSize(18);
-                pdf.setTextColor(150);
-                pdf.text("NO SIGNATURE PROVIDED", pdfWidth / 2, pdfHeight / 2, { align: 'center' });
-                pdf.setTextColor(0);
-            }
+/* ----------------------------- Firebase counters (show live) ----------------------------- */
+const sigCountRef = db.ref('signature_count');
+const mailCountRef = db.ref('email_count');
 
-            return pdf.output("blob");
+sigCountRef.on('value', snap => { sigCountEl.innerText = snap.exists() ? snap.val() : 0; });
+mailCountRef.on('value', snap => { mailCountEl.innerText = snap.exists() ? snap.val() : 0; });
 
-        } catch (error) {
-            console.error("PDF Generation Error:", error);
-            showMessage("Error generating PDF: " + error.message);
-            return null;
-        }
-    }
+/* ----------------------------- Submit flow (Option B) ----------------------------- */
+const WEB3_KEY = 'beeb8690-8cbb-464e-ad6d-87d3b6537a03'; // your Web3Forms key
 
-    // 3. Toggle PDF Menu
-    document.getElementById("pdfMenuBtn").onclick = () => {
-        const menu = document.getElementById("pdfMenu");
-        if (menu.style.display === "block") {
-            menu.style.display = "none";
-        } else {
-            menu.style.display = "block";
-        }
+submitBtn.onclick = async ()=>{
+  const name = (document.getElementById('name').value||'').trim();
+  const number = (document.getElementById('number').value||'').trim();
+  const district = (document.getElementById('district').value||'').trim();
+  if(!name) { showMessage('Enter your name'); return; }
+  if(!number) { showMessage('Enter phone number'); return; }
+  if(!district) { showMessage('Select district'); return; }
+  if(signaturePad.isEmpty()){ showMessage('Please sign before submitting'); return; }
+
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Submitting...';
+
+  try{
+    // 1) Upload signature image to Firebase Storage
+    const dataUrl = signaturePad.toDataURL('image/png');
+    const blob = await (await fetch(dataUrl)).blob();
+    const ts = Date.now();
+    const path = `signatures/sign_${ts}.png`;
+    const ref = storage.ref().child(path);
+    await ref.put(blob);
+    const downloadURL = await ref.getDownloadURL();
+
+    // 2) Save full record under signatures/
+    const pushRef = db.ref('signatures').push();
+    const record = {
+      name, number, district, signatureURL: downloadURL, createdAt: firebase.database.ServerValue.TIMESTAMP
     };
+    await pushRef.set(record);
 
-    // 4. Preview Function
-    document.getElementById("previewBtn").onclick = async () => {
-        const pdfBlob = await createPDF();
-        if (pdfBlob) {
-            const url = URL.createObjectURL(pdfBlob);
-            window.open(url, "_blank");
-        }
-    };
+    // 3) Increment signature count
+    await sigCountRef.transaction(current => (current || 0) + 1);
 
-    // 5. Download Function
-    document.getElementById("downloadBtn").onclick = async () => {
-        const pdfBlob = await createPDF();
-        if (pdfBlob) {
-            const url = URL.createObjectURL(pdfBlob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `Signed_Document_${new Date().toISOString().slice(0, 10)}.pdf`;
-            a.click();
-        }
-    };
+    // 4) Send email via Web3Forms with link (NOT attachment)
+    const form = new FormData();
+    form.append('access_key', WEB3_KEY);
+    form.append('subject', `DYFI Signature — ${name}`);
+    form.append('name', name);
+    form.append('phone', number);
+    form.append('district', district);
+    form.append('message', `New signature submitted. Download: ${downloadURL}`);
+    form.append('redirect', 'https://web3forms.com/success');
 
-    // 6. Web3Forms Email Function (UPDATED: Sends only Text Data)
-    document.getElementById("save").onclick = async () => {
-        const name = document.getElementById("name").value.trim();
-        const number = document.getElementById("number").value.trim();
-        const district = document.getElementById("district").value;
-        const btn = document.getElementById("save");
-
-        // --- Validation ---
-        if (!name) return showMessage("Please enter your **Name**.");
-        if (!number) return showMessage("Please enter your **Phone Number**.");
-        if (!district) return showMessage("Please select your **District**.");
-        if (signaturePad.isEmpty()) return showMessage("Please **sign** the document before submitting."); 
-
-        // UI Feedback during process
-        btn.innerText = "Submitting...";
-        btn.disabled = true;
-
-        // *** NOTE: We skip PDF generation and attachment here ***
-        
-        const formData = new FormData();
-        
-        // 1. Access Key (Required for Web3Forms)
-        formData.append("access_key", "6e1efc51-93b3-4ffc-8d33-a446ca6eacd8"); 
-        
-        // 2. Subject and User Fields (Using explicit labels for clarity in the received email)
-        formData.append("subject", `New Signature Submission from ${name} (${district})`); 
-        formData.append("Name", name); 
-        formData.append("Phone Number", number); 
-        formData.append("District", district); 
-        
-        formData.append("message", `New signature details received.For new dyfi member.`);
-
-        try {
-            const response = await fetch("https://api.web3forms.com/submit", {
-                method: "POST",
-                body: formData
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                showMessage(`Success! Your details have been submitted. Thank you for signing!`);
-                
-                // Clear the form for the next user
-                document.getElementById("name").value = "";
-                document.getElementById("number").value = "";
-                document.getElementById("district").value = "";
-                signaturePad.clear();
-                document.getElementById("pdfMenu").style.display = "none";
-            } else {
-                showMessage(`Error submitting details: ${result.message}`);
-                console.error("Web3Forms API Error:", result);
-            }
-        } catch (error) {
-            showMessage("Network Error: Could not connect to the API.");
-            console.error("Fetch Error:", error);
-        } finally {
-            // Reset UI
-            btn.innerText = "Submit Details "; 
-            btn.disabled = false;
-        }
-    };
-</script>
-
-</body>
-</html>
-
+    const resp = await fetch('https://api.web3forms.com/submit', { method:'POST', body: form });
+    const json = await resp.json();
+    if(json.success){
+      // increment mail count
+      await mailCountRef.transaction(current => (current || 0) + 1);
+      showMessage('Submitted successfully — email sent!');
+      // 
